@@ -1,17 +1,18 @@
 
 import "./globals.css";
 import Link from "next/link";
+import type { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "ShopPulse AI",
-  description: "AI 店家健檢"
+  description: "AI 店家健檢",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="zh-Hant">
       <body>
@@ -20,19 +21,19 @@ export default function RootLayout({
             position: "sticky",
             top: 0,
             zIndex: 1000,
-            padding: "16px"
+            padding: "16px",
           }}
         >
           <nav
             className="glass"
             style={{
               maxWidth: "1200px",
-              margin: "auto",
+              margin: "0 auto",
               borderRadius: "999px",
               padding: "14px 22px",
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "center"
+              alignItems: "center",
             }}
           >
             <Link
@@ -40,7 +41,7 @@ export default function RootLayout({
               style={{
                 color: "#2563eb",
                 fontWeight: 800,
-                fontSize: "22px"
+                fontSize: "22px",
               }}
             >
               🚀 ShopPulse AI
