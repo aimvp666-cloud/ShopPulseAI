@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -12,58 +13,73 @@ export async function POST(req: Request) {
     }
 
     const prompt = `
-請以這張店面照片為基礎進行改造。
+請根據這張店面照片生成真實改造效果圖。
 
 要求：
-- 保留原建築結構與比例
-- Apple Store 等級乾淨設計
+- 保留原建築結構
+- Apple Store 等級設計
 - 藍白科技感
 - 招牌更醒目
 - 夜間燈光更漂亮
-- 提高進店率
-- 真實建築改造效果圖
+- 更容易吸引客人進店
 `;
 
-    const form = new FormData();
-
-    form.append("model", "gpt-image-1");
-    form.append("prompt", prompt);
-    form.append("image[]", image);
-    form.append("input_fidelity", "high");
-    form.append("quality", "high");
-    form.append("size", "1024x1024");
-
     const response = await fetch(
-      "https://api.openai.com/v1/images/edits",
+      "https://api.openai.com/v1/responses",
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
         },
-        body: form,
+        body: JSON.stringify({
+          model: "gpt-5.6",
+          tools: [{ type: "image_generation" }],
+          input: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "input_text",
+                  text: prompt,
+                },
+                {
+                  type: "input_image",
+                  image_url: image,
+                  detail: "high",
+                },
+              ],
+            },
+          ],
+        }),
       }
     );
 
     if (!response.ok) {
-      const err = await response.text();
-      console.error(err);
+      const text = await response.text();
+      console.error(text);
 
-      throw new Error("Image API Error");
+      return NextResponse.json(
+        { error: text },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();
 
+    const imageOutput = data.output?.find(
+      (o: any) => o.type === "image_generation_call"
+    );
+
     return NextResponse.json({
-      image: data.data?.[0]?.b64_json || null,
+      image: imageOutput?.result || null,
     });
 
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
-      {
-        error: "AI 暫時無法生成圖片",
-      },
+      { error: "AI 暫時無法生成圖片" },
       { status: 500 }
     );
   }
