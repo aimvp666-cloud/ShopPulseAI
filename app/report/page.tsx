@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 
-const score = 87;
+const [report, setReport] = useState(null);
 
 const swot = {
   strengths: ["店面辨識度高", "Google 評論基礎不錯"],
