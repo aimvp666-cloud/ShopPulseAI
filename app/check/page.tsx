@@ -4,199 +4,99 @@
 import { useState } from "react";
 
 export default function CheckPage() {
-  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     store: "",
-    owner: "",
-    phone: "",
-    line: "",
-    email: "",
     industry: "",
     visitors: "",
     price: "",
     revenue: "",
-    problem: ""
+    problem: "",
   });
-
-  const update = (key: string, value: string) => {
-    setForm({ ...form, [key]: value });
-  };
 
   async function submit() {
     setLoading(true);
 
-    await fetch("/api/analyze", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(form)
-    });
+    sessionStorage.setItem("shoppulse_form", JSON.stringify(form));
 
-    setLoading(false);
-    window.location.href = "/report";
+    setTimeout(() => {
+      window.location.href = "/report";
+    }, 2500);
+  }
+
+  if (loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
+        <div className="text-center animate-pulse">
+          <div className="text-6xl mb-6">🤖</div>
+          <h1 className="text-3xl font-bold">AI 正在分析你的店面</h1>
+          <p className="text-slate-500 mt-3">
+            正在整理 Google、社群與營運資料...
+          </p>
+        </div>
+      </main>
+    );
   }
 
   return (
     <main className="min-h-screen bg-slate-50 p-6">
-      <div className="mx-auto max-w-xl">
+      <div className="max-w-xl mx-auto bg-white rounded-3xl shadow p-6 space-y-5">
 
-        <h1 className="text-3xl font-bold mb-2">
-          免費 AI 店家健檢
+        <h1 className="text-3xl font-bold text-center">
+          免費 AI 健檢
         </h1>
 
-        <p className="text-slate-500 mb-6">
-          約 3 分鐘完成分析
-        </p>
+        <input
+          className="w-full rounded-xl border p-3"
+          placeholder="店名"
+          value={form.store}
+          onChange={(e)=>setForm({...form,store:e.target.value})}
+        />
 
-        <div className="h-2 bg-slate-200 rounded-full mb-8">
-          <div
-            className="h-full bg-blue-600 rounded-full transition-all"
-            style={{ width: `${step * 20}%` }}
-          />
-        </div>
+        <input
+          className="w-full rounded-xl border p-3"
+          placeholder="行業（例如：餐飲、美業）"
+          value={form.industry}
+          onChange={(e)=>setForm({...form,industry:e.target.value})}
+        />
 
-        <div className="bg-white rounded-3xl shadow p-6">
+        <input
+          className="w-full rounded-xl border p-3"
+          placeholder="每日來客數"
+          value={form.visitors}
+          onChange={(e)=>setForm({...form,visitors:e.target.value})}
+        />
 
-          {step === 1 && (
-            <>
-              <input
-                placeholder="店名"
-                className="w-full border rounded-xl p-3 mb-3"
-                value={form.store}
-                onChange={(e)=>update("store",e.target.value)}
-              />
+        <input
+          className="w-full rounded-xl border p-3"
+          placeholder="平均客單價"
+          value={form.price}
+          onChange={(e)=>setForm({...form,price:e.target.value})}
+        />
 
-              <input
-                placeholder="負責人"
-                className="w-full border rounded-xl p-3 mb-3"
-                value={form.owner}
-                onChange={(e)=>update("owner",e.target.value)}
-              />
+        <input
+          className="w-full rounded-xl border p-3"
+          placeholder="月營業額"
+          value={form.revenue}
+          onChange={(e)=>setForm({...form,revenue:e.target.value})}
+        />
 
-              <input
-                placeholder="電話"
-                className="w-full border rounded-xl p-3"
-                value={form.phone}
-                onChange={(e)=>update("phone",e.target.value)}
-              />
-            </>
-          )}
+        <textarea
+          className="w-full rounded-xl border p-3"
+          rows={4}
+          placeholder="目前最大的困擾"
+          value={form.problem}
+          onChange={(e)=>setForm({...form,problem:e.target.value})}
+        />
 
-          {step === 2 && (
-            <>
-              <input
-                placeholder="LINE"
-                className="w-full border rounded-xl p-3 mb-3"
-                value={form.line}
-                onChange={(e)=>update("line",e.target.value)}
-              />
+        <button
+          onClick={submit}
+          className="w-full rounded-2xl bg-blue-600 text-white font-bold py-4"
+        >
+          開始 AI 分析
+        </button>
 
-              <input
-                placeholder="Email"
-                className="w-full border rounded-xl p-3"
-                value={form.email}
-                onChange={(e)=>update("email",e.target.value)}
-              />
-            </>
-          )}
-
-          {step === 3 && (
-            <>
-              <select
-                className="w-full border rounded-xl p-3 mb-3"
-                value={form.industry}
-                onChange={(e)=>update("industry",e.target.value)}
-              >
-                <option value="">請選擇行業</option>
-                <option>餐飲</option>
-                <option>美業</option>
-                <option>零售</option>
-                <option>健身</option>
-                <option>汽機車</option>
-                <option>其他</option>
-              </select>
-
-              <input
-                placeholder="每日來客數"
-                className="w-full border rounded-xl p-3 mb-3"
-                value={form.visitors}
-                onChange={(e)=>update("visitors",e.target.value)}
-              />
-
-              <input
-                placeholder="客單價"
-                className="w-full border rounded-xl p-3"
-                value={form.price}
-                onChange={(e)=>update("price",e.target.value)}
-              />
-            </>
-          )}
-
-          {step === 4 && (
-            <>
-              <input
-                placeholder="月營業額"
-                className="w-full border rounded-xl p-3 mb-3"
-                value={form.revenue}
-                onChange={(e)=>update("revenue",e.target.value)}
-              />
-
-              <textarea
-                placeholder="目前最大的困擾"
-                className="w-full border rounded-xl p-3 h-32"
-                value={form.problem}
-                onChange={(e)=>update("problem",e.target.value)}
-              />
-            </>
-          )}
-
-          {step === 5 && (
-            <>
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                className="w-full border rounded-xl p-3"
-              />
-
-              <p className="text-sm text-slate-500 mt-3">
-                最多上傳五張店面照片
-              </p>
-            </>
-          )}
-
-          <div className="flex justify-between mt-8">
-
-            <button
-              onClick={()=>setStep(Math.max(1,step-1))}
-              className="px-5 py-3 border rounded-xl"
-            >
-              上一步
-            </button>
-
-            {step<5 ? (
-              <button
-                onClick={()=>setStep(step+1)}
-                className="px-5 py-3 bg-blue-600 text-white rounded-xl"
-              >
-                下一步
-              </button>
-            ):(
-              <button
-                onClick={submit}
-                disabled={loading}
-                className="px-5 py-3 bg-blue-600 text-white rounded-xl"
-              >
-                {loading ? "分析中..." : "開始 AI 分析"}
-              </button>
-            )}
-
-          </div>
-
-        </div>
       </div>
     </main>
   );
