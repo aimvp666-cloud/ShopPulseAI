@@ -1,30 +1,10 @@
-
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     const { image } = await req.json();
 
-    if (!image) {
-      return NextResponse.json(
-        { error: "缺少圖片" },
-        { status: 400 }
-      );
-    }
-
-    const prompt = `
-請根據這張店面照片生成真實改造效果圖。
-
-要求：
-- 保留原建築結構
-- Apple Store 等級設計
-- 藍白科技感
-- 招牌更醒目
-- 夜間燈光更漂亮
-- 更容易吸引客人進店
-`;
-
-    const response = await fetch(
+    const vision = await fetch(
       "https://api.openai.com/v1/responses",
       {
         method: "POST",
@@ -34,14 +14,13 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           model: "gpt-5.6",
-          tools: [{ type: "image_generation" }],
           input: [
             {
               role: "user",
               content: [
                 {
                   type: "input_text",
-                  text: prompt,
+                  text: "請描述這間店面的招牌、門面、燈光與風格。",
                 },
                 {
                   type: "input_image",
@@ -55,24 +34,53 @@ export async function POST(req: Request) {
       }
     );
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.error(text);
-
-      return NextResponse.json(
-        { error: text },
-        { status: response.status }
-      );
+    if (!vision.ok) {
+      throw new Error("Vision 失敗");
     }
 
-    const data = await response.json();
+    const visionData = await vision.json();
 
-    const imageOutput = data.output?.find(
-      (o: any) => o.type === "image_generation_call"
+    const description = visionData.output_text || "";
+
+    const generate = await fetch(
+      "https://api.openai.com/v1/responses",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-5.6",
+          tools: [{ type: "image_generation" }],
+          input: `根據這間店面的描述：${description}
+
+生成一張真實建築改造效果圖。
+
+要求：
+- Apple Store 等級設計
+- 保留建築比例
+- 藍白科技感
+- 招牌更醒目
+- 夜間燈光更漂亮
+- 更容易吸引客人進店`,
+        }),
+      }
+    );
+
+    if (!generate.ok) {
+      throw new Error("Image Generation 失敗");
+    }
+
+    const data = await generate.json();
+
+    const imageCall = data.output.find(
+      (item: any) => item.type === "image_generation_call"
     );
 
     return NextResponse.json({
-      image: imageOutput?.result || null,
+      image: imageCall?.result || null,
+      description,
     });
 
   } catch (error) {
