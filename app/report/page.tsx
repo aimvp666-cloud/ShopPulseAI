@@ -1,204 +1,251 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
-type Report={
-  score:number;
-  google:string;
-  social:string;
-  swot:{
-    strengths:string[];
-    weaknesses:string[];
-    opportunities:string[];
-    threats:string[];
+type Report = {
+  score: number;
+  google: string;
+  social: string;
+  swot: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
   };
 };
 
-export default function ReportPage(){
+const fallback: Report = {
+  score: 86,
+  google: "Google 商家仍有曝光提升空間，建議增加近期照片並維持評論互動。",
+  social: "社群更新頻率偏低，可透過短影音提高觸及。",
+  swot: {
+    strengths: ["店面辨識度高", "既有客群穩定"],
+    weaknesses: ["社群曝光不足", "Google 商家照片更新少"],
+    opportunities: ["短影音導流", "Google 在地 SEO"],
+    threats: ["附近競爭增加", "回訪率下降"],
+  },
+};
 
-  const [report,setReport]=useState<Report|null>(null);
-  const [store,setStore]=useState("你的店");
-  const [industry,setIndustry]=useState("");
+export default function ReportPage() {
+  const [report, setReport] = useState<Report>(fallback);
+  const [displayScore, setDisplayScore] = useState(0);
+  const [store, setStore] = useState("你的店");
+  const [industry, setIndustry] = useState("");
 
-  useEffect(()=>{
+  useEffect(() => {
+    const raw = sessionStorage.getItem("shoppulse_form");
+    if (raw) {
+      const form = JSON.parse(raw);
+      setStore(form.store || "你的店");
+      setIndustry(form.industry || "");
+    }
 
-    async function load(){
-
-      const raw=sessionStorage.getItem("shoppulse_form");
-
-      const form=raw?JSON.parse(raw):{};
-
-      setStore(form.store||"你的店");
-
-      setIndustry(form.industry||"");
-
-      try{
-
-        const res=await fetch("/api/analyze",{
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
-          body:JSON.stringify(form)
+    async function load() {
+      try {
+        const res = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: raw || "{}",
         });
 
-        const data=await res.json();
-
-        setReport({
-          score:data.score??82,
-          google:data.google??"Google 商家分析完成。",
-          social:data.social??"社群分析完成。",
-          swot:{
-            strengths:data.swot?.strengths??["店面辨識度佳"],
-            weaknesses:data.swot?.weaknesses??["社群曝光不足"],
-            opportunities:data.swot?.opportunities??["短影音導流"],
-            threats:data.swot?.threats??["競爭增加"]
-          }
-        });
-
-      }catch{
-
-        setReport({
-          score:82,
-          google:"Google 商家分析完成。",
-          social:"社群分析完成。",
-          swot:{
-            strengths:["店面辨識度佳"],
-            weaknesses:["社群曝光不足"],
-            opportunities:["短影音導流"],
-            threats:["競爭增加"]
-          }
-        });
-
-      }
-
+        if (res.ok) {
+          const data = await res.json();
+          setReport({
+            score: data.score ?? fallback.score,
+            google: data.google ?? fallback.google,
+            social: data.social ?? fallback.social,
+            swot: {
+              strengths: data.swot?.strengths ?? fallback.swot.strengths,
+              weaknesses: data.swot?.weaknesses ?? fallback.swot.weaknesses,
+              opportunities:
+                data.swot?.opportunities ?? fallback.swot.opportunities,
+              threats: data.swot?.threats ?? fallback.swot.threats,
+            },
+          });
+        }
+      } catch {}
     }
 
     load();
+  }, []);
 
-  },[]);
+  useEffect(() => {
+    let n = 0;
+    const timer = setInterval(() => {
+      n += 1;
+      if (n >= report.score) {
+        n = report.score;
+        clearInterval(timer);
+      }
+      setDisplayScore(n);
+    }, 20);
 
-  if(!report){
+    return () => clearInterval(timer);
+  }, [report.score]);
 
-    return(
-      <main className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center animate-pulse">
-          <div className="text-6xl mb-6">🤖</div>
-          <h1 className="text-3xl font-bold">AI 正在生成報告</h1>
+  return (
+    <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "30px 20px 80px" }}>
+      <Link href="/" style={{ color: "#2563eb" }}>
+        ← 返回首頁
+      </Link>
+
+      <section
+        className="glass"
+        style={{
+          borderRadius: "36px",
+          padding: "40px 30px",
+          marginTop: "20px",
+          textAlign: "center",
+        }}
+      >
+        <h1 style={{ fontSize: "42px", marginBottom: "12px" }}>
+          {store} AI 健檢報告
+        </h1>
+
+        <p style={{ color: "#64748b" }}>
+          {industry || "店家"}｜AI 即時分析結果
+        </p>
+
+        <div
+          className="score-ring"
+          style={{ margin: "40px auto 20px" }}
+        >
+          <div className="score-inner">
+            <div style={{ fontSize: "54px", fontWeight: "800" }}>
+              {displayScore}
+            </div>
+
+            <div style={{ color: "#64748b" }}>健康度</div>
+          </div>
         </div>
-      </main>
-    );
 
-  }
+        <p
+          style={{
+            maxWidth: "560px",
+            margin: "20px auto 0",
+            color: "#64748b",
+            lineHeight: "1.7",
+          }}
+        >
+          AI 已完成 Google 商家、社群經營與店面營運分析，
+          以下是目前最值得優先改善的項目。
+        </p>
+      </section>
 
-  return(
-
-    <main className="min-h-screen bg-slate-50 p-6">
-
-      <div className="max-w-5xl mx-auto">
-
-        <Link href="/" className="text-blue-600">
-          ← 返回首頁
-        </Link>
-
-        <div className="text-center mt-8">
-
-          <h1 className="text-4xl font-bold">
-            {store} AI 健檢報告
-          </h1>
-
-          <p className="text-slate-500 mt-3">
-            {industry}｜AI 即時分析結果
+      <section
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+          gap: "22px",
+          marginTop: "30px",
+        }}
+      >
+        <div className="card" style={{ padding: "24px" }}>
+          <h3>⭐ Google 商家</h3>
+          <p style={{ color: "#64748b", lineHeight: "1.7" }}>
+            {report.google}
           </p>
-
         </div>
 
-        <div className="mt-10 flex justify-center">
+        <div className="card" style={{ padding: "24px" }}>
+          <h3>📱 社群分析</h3>
+          <p style={{ color: "#64748b", lineHeight: "1.7" }}>
+            {report.social}
+          </p>
+        </div>
+      </section>
 
-          <div className="h-56 w-56 rounded-full border-[16px] border-blue-600 bg-white shadow flex flex-col items-center justify-center">
+      <section
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
+          gap: "22px",
+          marginTop: "30px",
+        }}
+      >
+        <box className="card" padding=3 gap=2>
+          <title size=sm>💪 優勢</title>
+          <list gap=1>{#each report.swot.strengths as i}<list-item>{i}</list-item>{/each}</list>
+        </box>
 
-            <div className="text-5xl font-bold">
-              {report.score}
+        <box className="card" padding=3 gap=2>
+          <title size=sm>⚠️ 待改善</title>
+          <list gap=1>{#each report.swot.weaknesses as i}<list-item>{i}</list-item>{/each}</list>
+        </box>
+
+        <box className="card" padding=3 gap=2>
+          <title size=sm>🚀 機會</title>
+          <list gap=1>{#each report.swot.opportunities as i}<list-item>{i}</list-item>{/each}</list>
+        </box>
+
+        <box className="card" padding=3 gap=2>
+          <title size=sm>🛡️ 風險</title>
+          <list gap=1>{#each report.swot.threats as i}<list-item>{i}</list-item>{/each}</list>
+        </box>
+      </section>
+
+      <section
+        className="glass"
+        style={{
+          borderRadius: "36px",
+          padding: "36px",
+          marginTop: "36px",
+        }}
+      >
+        <h2 style={{ marginBottom: "24px" }}>七天改善計畫</h2>
+
+        <div style={{ display: "grid", gap: "18px" }}>
+          {[
+            "更新 Google 商家照片（Day 1）",
+            "回覆近期所有評論（Day 2）",
+            "發布第一支短影音（Day 3）",
+            "優化店門口招牌（Day 4）",
+            "建立回訪優惠（Day 5）",
+            "分析熱門商品（Day 6）",
+            "追蹤一週數據（Day 7）",
+          ].map((item) => (
+            <div
+              key={item}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "16px",
+              }}
+            >
+              <div
+                style={{
+                  width: "34px",
+                  height: "34px",
+                  borderRadius: "999px",
+                  background: "linear-gradient(135deg,#2563eb,#0ea5e9)",
+                  color: "white",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  fontWeight: "700",
+                }}
+              >
+                ✓
+              </div>
+
+              <span>{item}</span>
             </div>
-
-            <div className="text-slate-500">
-              健康度
-            </div>
-
-          </div>
-
+          ))}
         </div>
+      </section>
 
-        <div className="grid md:grid-cols-2 gap-5 mt-10">
-
-          <div className="rounded-3xl bg-white p-6 shadow">
-
-            <h2 className="font-bold mb-3">
-              Google 商家
-            </h2>
-
-            <p>{report.google}</p>
-
-          </div>
-
-          <div className="rounded-3xl bg-white p-6 shadow">
-
-            <h2 className="font-bold mb-3">
-              社群分析
-            </h2>
-
-            <p>{report.social}</p>
-
-          </div>
-
-          <div className="rounded-3xl bg-white p-6 shadow">
-
-            <h3 className="font-bold mb-3">
-              💪 優勢
-            </h3>
-
-            {report.swot.strengths.map(i=><p key={i}>• {i}</p>)}
-
-          </div>
-
-          <div className="rounded-3xl bg-white p-6 shadow">
-
-            <h3 className="font-bold mb-3">
-              ⚠️ 待改善
-            </h3>
-
-            {report.swot.weaknesses.map(i=><p key={i}>• {i}</p>)}
-
-          </div>
-
-          <div className="rounded-3xl bg-white p-6 shadow">
-
-            <h3 className="font-bold mb-3">
-              🚀 機會
-            </h3>
-
-            {report.swot.opportunities.map(i=><p key={i}>• {i}</p>)}
-
-          </div>
-
-          <div className="rounded-3xl bg-white p-6 shadow">
-
-            <h3 className="font-bold mb-3">
-              🛡️ 風險
-            </h3>
-
-            {report.swot.threats.map(i=><p key={i}>• {i}</p>)}
-
-          </div>
-
-        </div>
-
-      </div>
-
+      <section
+        style={{
+          textAlign: "center",
+          marginTop: "40px",
+        }}
+      >
+        <button className="btn-primary">
+          📄 PDF 報告（下一版）
+        </button>
+      </section>
     </main>
-
   );
-
 }
