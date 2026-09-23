@@ -1,1 +1,0 @@
-export default function Home(){return <main className="hero"><h1 style={{fontSize:"48px"}}>商脈 AI</h1><p>3 分鐘 AI 店家健檢。</p><a className="btn" href="/check">免費 AI 健檢</a><a className="btn" style={{background:"#0f172a"}} href="/dashboard">Dashboard</a><div className="grid"><div className="card"><h3>100 分評分</h3></div><div className="card"><h3>Google 商家</h3></div></div></main>}
