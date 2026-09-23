@@ -13,15 +13,16 @@ export async function POST(req: Request) {
     }
 
     const prompt = `
-保留原本建築結構。
+根據提供的店面照片，
+生成一張真實感建築改造效果圖。
 
-把這間店面改造成：
-- Apple Store 等級乾淨設計
+要求：
+- 保留原建築比例
+- Apple Store 風格
 - 藍白科技感
-- 招牌更醒目
-- 夜間燈光更漂亮
-- 提高進店率
-- 真實建築改造效果圖
+- 更醒目的招牌
+- 更好的夜間燈光
+- 更吸引人進店
 `;
 
     const response = await fetch(
@@ -35,7 +36,6 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           model: "gpt-image-1",
           prompt,
-          image,
           size: "1024x1024",
         }),
       }
@@ -50,6 +50,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       image: data.data?.[0]?.b64_json || null,
     });
+
   } catch (error) {
     console.error(error);
 
