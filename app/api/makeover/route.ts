@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -13,36 +12,43 @@ export async function POST(req: Request) {
     }
 
     const prompt = `
-根據提供的店面照片，
-生成一張真實感建築改造效果圖。
+請以這張店面照片為基礎進行改造。
 
 要求：
-- 保留原建築比例
-- Apple Store 風格
+- 保留原建築結構與比例
+- Apple Store 等級乾淨設計
 - 藍白科技感
-- 更醒目的招牌
-- 更好的夜間燈光
-- 更吸引人進店
+- 招牌更醒目
+- 夜間燈光更漂亮
+- 提高進店率
+- 真實建築改造效果圖
 `;
 
+    const form = new FormData();
+
+    form.append("model", "gpt-image-1");
+    form.append("prompt", prompt);
+    form.append("image[]", image);
+    form.append("input_fidelity", "high");
+    form.append("quality", "high");
+    form.append("size", "1024x1024");
+
     const response = await fetch(
-      "https://api.openai.com/v1/images/generations",
+      "https://api.openai.com/v1/images/edits",
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          model: "gpt-image-1",
-          prompt,
-          size: "1024x1024",
-        }),
+        body: form,
       }
     );
 
     if (!response.ok) {
-      throw new Error(`Image API ${response.status}`);
+      const err = await response.text();
+      console.error(err);
+
+      throw new Error("Image API Error");
     }
 
     const data = await response.json();
@@ -54,8 +60,11 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error(error);
 
-    return NextResponse.json({
-      image: null,
-    });
+    return NextResponse.json(
+      {
+        error: "AI 暫時無法生成圖片",
+      },
+      { status: 500 }
+    );
   }
 }
