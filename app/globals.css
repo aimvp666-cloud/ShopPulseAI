@@ -1,6 +1,4 @@
 
-@import "tailwindcss";
-
 :root{
   --bg:#f8fbff;
   --card:rgba(255,255,255,.78);
@@ -22,8 +20,8 @@ html{
 
 body{
   background:
-  radial-gradient(circle at top,#dbeafe 0%,transparent 45%),
-  linear-gradient(180deg,#ffffff 0%,var(--bg) 100%);
+    radial-gradient(circle at top,#dbeafe 0%,transparent 45%),
+    linear-gradient(180deg,#ffffff 0%,var(--bg) 100%);
   color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Noto Sans TC",sans-serif;
 }
@@ -64,8 +62,8 @@ a{
   padding:16px 30px;
   border-radius:20px;
   border:1px solid #d6e3ff;
-  color:var(--blue);
   background:white;
+  color:var(--blue);
 }
 
 .card{
@@ -102,13 +100,10 @@ a{
   }
   to{
     opacity:1;
-    transform:translateY(0);
-  }
+    transform:translateY(0);}
 }
 
-input,
-textarea,
-select{
+input,textarea,select{
   width:100%;
   padding:16px;
   border-radius:18px;
@@ -154,13 +149,8 @@ select:focus{
   animation:bounce 1.2s infinite;
 }
 
-.loading-dots span:nth-child(2){
-  animation-delay:.2s;
-}
-
-.loading-dots span:nth-child(3){
-  animation-delay:.4s;
-}
+.loading-dots span:nth-child(2){animation-delay:.2s;}
+.loading-dots span:nth-child(3){animation-delay:.4s;}
 
 @keyframes bounce{
   0%,80%,100%{
