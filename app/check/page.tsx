@@ -36,7 +36,7 @@ export default function CheckPage() {
     });
 
     setLoading(false);
-    alert("AI 分析已送出！");
+    window.location.href = "/report";
   }
 
   return (
