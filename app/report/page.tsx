@@ -1,113 +1,76 @@
 
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
-type Report={
-  score:number;
-  google:string;
-  social:string;
-  swot:{
-    strengths:string[];
-    weaknesses:string[];
-    opportunities:string[];
-    threats:string[];
-  };
-};
+export default function ReportPage() {
 
-const fallback:Report={
-  score:86,
-  google:"Google 商家仍有曝光提升空間。",
-  social:"社群更新頻率偏低。",
-  swot:{
-    strengths:["店面辨識度高"],
-    weaknesses:["社群曝光不足"],
-    opportunities:["短影音導流"],
-    threats:["附近競爭增加"]
-  }
-};
+  const [score, setScore] = useState(0);
+  const [store, setStore] = useState("你的店");
+  const [preview, setPreview] = useState<string | null>(null);
+  const [after, setAfter] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-export default function ReportPage(){
+  useEffect(() => {
+    const raw = sessionStorage.getItem("shoppulse_form");
 
-  const [report,setReport]=useState(fallback);
-  const [score,setScore]=useState(0);
-  const [store,setStore]=useState("你的店");
+    if (raw) {
+      const form = JSON.parse(raw);
 
-  useEffect(()=>{
-
-    const raw=sessionStorage.getItem("shoppulse_form");
-
-    if(raw){
-
-      const form=JSON.parse(raw);
-
-      setStore(form.store||"你的店");
-
+      setStore(form.store || "你的店");
+      setPreview(form.preview || null);
     }
 
-  },[]);
+    let value = 0;
 
-  useEffect(()=>{
-
-    let value=0;
-
-    const timer=setInterval(()=>{
-
+    const timer = setInterval(() => {
       value++;
 
-      if(value>=report.score){
-
-        value=report.score;
-
+      if (value >= 86) {
+        value = 86;
         clearInterval(timer);
-
       }
 
       setScore(value);
+    }, 20);
 
-    },20);
+    return () => clearInterval(timer);
+  }, []);
 
-    return()=>clearInterval(timer);
+  async function generate() {
 
-  },[report.score]);
+    if (!preview) return;
 
-  async function download(){
+    setLoading(true);
 
-    const res=await fetch("/api/pdf",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        store,
-        score:report.score,
-        google:report.google,
-        social:report.social
-      })
-    });
+    try {
+      const res = await fetch("/api/makeover", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          image: preview
+        })
+      });
 
-    const html=await res.text();
+      const data = await res.json();
 
-    const w=window.open("");
+      if (data.image) {
+        setAfter(`data:image/png;base64,${data.image}`);
+      }
 
-    if(w){
+    } catch {}
 
-      w.document.write(html);
-
-      w.document.close();
-
-      setTimeout(()=>w.print(),500);
-
-    }
-
+    setLoading(false);
   }
 
-  return(
+  return (
 
     <main
       style={{
-        maxWidth:"1000px",
+        maxWidth:"1100px",
         margin:"auto",
         padding:"30px 20px 80px"
       }}
@@ -122,20 +85,18 @@ export default function ReportPage(){
         style={{
           borderRadius:"36px",
           padding:"40px",
-          marginTop:"20px",
-          textAlign:"center"
+          textAlign:"center",
+          marginTop:"20px"
         }}
       >
 
-        <h1 style={{fontSize:"42px"}}>
-          {store} AI 健檢報告
-        </h1>
+        <h1>{store} AI 健檢報告</h1>
 
         <div
           style={{
             width:"220px",
             height:"220px",
-            margin:"40px auto",
+            margin:"30px auto",
             borderRadius:"999px",
             background:"conic-gradient(#2563eb 310deg,#e5e7eb 0)",
             padding:"14px"
@@ -155,13 +116,16 @@ export default function ReportPage(){
             }}
           >
 
-            <div style={{fontSize:"54px",fontWeight:800}}>
+            <div
+              style={{
+                fontSize:"54px",
+                fontWeight:800
+              }}
+            >
               {score}
             </div>
 
-            <div style={{color:"#64748b"}}>
-              健康度
-            </div>
+            健康度
 
           </div>
 
@@ -172,25 +136,69 @@ export default function ReportPage(){
       <div
         style={{
           display:"grid",
-          gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",
-          gap:"22px",
+          gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",
+          gap:"24px",
           marginTop:"30px"
         }}
       >
 
-        <div className="card" style={{padding:"24px"}}>
+        <div className="card" style={{padding:"20px"}}>
 
-          <h3>⭐ Google 商家</h3>
+          <h3>📸 Before</h3>
 
-          <p>{report.google}</p>
+          {preview ? (
+            <img
+              src={preview}
+              alt="before"
+              style={{
+                width:"100%",
+                borderRadius:"20px",
+                marginTop:"12px"
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                height:"240px",
+                display:"flex",
+                justifyContent:"center",
+                alignItems:"center",
+                color:"#64748b"
+              }}
+            >
+              尚未上傳照片
+            </div>
+          )}
 
         </div>
 
-        <div className="card" style={{padding:"24px"}}>
+        <div className="card" style={{padding:"20px"}}>
 
-          <h3>📱 社群分析</h3>
+          <h3>✨ AI After</h3>
 
-          <p>{report.social}</p>
+          {after ? (
+            <img
+              src={after}
+              alt="after"
+              style={{
+                width:"100%",
+                borderRadius:"20px",
+                marginTop:"12px"
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                height:"240px",
+                display:"flex",
+                justifyContent:"center",
+                alignItems:"center",
+                color:"#64748b"
+              }}
+            >
+              點下面按鈕生成改造圖
+            </div>
+          )}
 
         </div>
 
@@ -199,15 +207,16 @@ export default function ReportPage(){
       <div
         style={{
           textAlign:"center",
-          marginTop:"40px"
+          marginTop:"30px"
         }}
       >
 
         <button
           className="btn-primary"
-          onClick={download}
+          onClick={generate}
+          disabled={loading || !preview}
         >
-          📄 下載 PDF 顧問報告
+          {loading ? "AI 正在改造..." : "✨ 生成改造效果圖"}
         </button>
 
       </div>
