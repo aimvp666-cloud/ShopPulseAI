@@ -36,6 +36,7 @@ export default function ReportPage() {
 
   useEffect(() => {
     const raw = sessionStorage.getItem("shoppulse_form");
+
     if (raw) {
       const form = JSON.parse(raw);
       setStore(form.store || "你的店");
@@ -52,6 +53,7 @@ export default function ReportPage() {
 
         if (res.ok) {
           const data = await res.json();
+
           setReport({
             score: data.score ?? fallback.score,
             google: data.google ?? fallback.google,
@@ -65,28 +67,41 @@ export default function ReportPage() {
             },
           });
         }
-      } catch {}
+      } catch {
+        // API 失敗就用 fallback
+      }
     }
 
     load();
   }, []);
 
   useEffect(() => {
-    let n = 0;
+    let value = 0;
+
     const timer = setInterval(() => {
-      n += 1;
-      if (n >= report.score) {
-        n = report.score;
+      value++;
+
+      if (value >= report.score) {
+        value = report.score;
         clearInterval(timer);
       }
-      setDisplayScore(n);
+
+      setDisplayScore(value);
     }, 20);
 
     return () => clearInterval(timer);
   }, [report.score]);
 
+  const scoreAngle = (displayScore / 100) * 360;
+
   return (
-    <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "30px 20px 80px" }}>
+    <main
+      style={{
+        maxWidth: "1200px",
+        margin: "0 auto",
+        padding: "30px 20px 80px",
+      }}
+    >
       <Link href="/" style={{ color: "#2563eb" }}>
         ← 返回首頁
       </Link>
@@ -109,11 +124,28 @@ export default function ReportPage() {
         </p>
 
         <div
-          className="score-ring"
-          style={{ margin: "40px auto 20px" }}
+          style={{
+            width: "220px",
+            height: "220px",
+            borderRadius: "50%",
+            background: `conic-gradient(#2563eb 0deg ${scoreAngle}deg,#e5e7eb ${scoreAngle}deg 360deg)`,
+            padding: "14px",
+            margin: "40px auto 20px",
+          }}
         >
-          <div className="score-inner">
-            <div style={{ fontSize: "54px", fontWeight: "800" }}>
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
+              background: "white",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <div style={{ fontSize: "54px", fontWeight: 800 }}>
               {displayScore}
             </div>
 
@@ -165,25 +197,41 @@ export default function ReportPage() {
           marginTop: "30px",
         }}
       >
-        <box className="card" padding=3 gap=2>
-          <title size=sm>💪 優勢</title>
-          <list gap=1>{#each report.swot.strengths as i}<list-item>{i}</list-item>{/each}</list>
-        </box>
+        <div className="card" style={{ padding: "24px" }}>
+          <h3>💪 優勢</h3>
+          <ul style={{ paddingLeft: "20px", marginTop: "12px" }}>
+            {report.swot.strengths.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
 
-        <box className="card" padding=3 gap=2>
-          <title size=sm>⚠️ 待改善</title>
-          <list gap=1>{#each report.swot.weaknesses as i}<list-item>{i}</list-item>{/each}</list>
-        </box>
+        <div className="card" style={{ padding: "24px" }}>
+          <h3>⚠️ 待改善</h3>
+          <ul style={{ paddingLeft: "20px", marginTop: "12px" }}>
+            {report.swot.weaknesses.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
 
-        <box className="card" padding=3 gap=2>
-          <title size=sm>🚀 機會</title>
-          <list gap=1>{#each report.swot.opportunities as i}<list-item>{i}</list-item>{/each}</list>
-        </box>
+        <div className="card" style={{ padding: "24px" }}>
+          <h3>🚀 機會</h3>
+          <ul style={{ paddingLeft: "20px", marginTop: "12px" }}>
+            {report.swot.opportunities.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
 
-        <box className="card" padding=3 gap=2>
-          <title size=sm>🛡️ 風險</title>
-          <list gap=1>{#each report.swot.threats as i}<list-item>{i}</list-item>{/each}</list>
-        </box>
+        <div className="card" style={{ padding: "24px" }}>
+          <h3>🛡️ 風險</h3>
+          <ul style={{ paddingLeft: "20px", marginTop: "12px" }}>
+            {report.swot.threats.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <section
@@ -196,56 +244,50 @@ export default function ReportPage() {
       >
         <h2 style={{ marginBottom: "24px" }}>七天改善計畫</h2>
 
-        <div style={{ display: "grid", gap: "18px" }}>
-          {[
-            "更新 Google 商家照片（Day 1）",
-            "回覆近期所有評論（Day 2）",
-            "發布第一支短影音（Day 3）",
-            "優化店門口招牌（Day 4）",
-            "建立回訪優惠（Day 5）",
-            "分析熱門商品（Day 6）",
-            "追蹤一週數據（Day 7）",
-          ].map((item) => (
+        {[
+          "Day 1：更新 Google 商家照片",
+          "Day 2：回覆近期所有評論",
+          "Day 3：發布第一支短影音",
+          "Day 4：優化店門口招牌",
+          "Day 5：建立回訪優惠",
+          "Day 6：分析熱門商品",
+          "Day 7：追蹤一週數據",
+        ].map((item) => (
+          <div
+            key={item}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              marginBottom: "16px",
+            }}
+          >
             <div
-              key={item}
               style={{
+                width: "34px",
+                height: "34px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg,#2563eb,#0ea5e9)",
+                color: "white",
                 display: "flex",
+                justifyContent: "center",
                 alignItems: "center",
-                gap: "16px",
+                fontWeight: 700,
               }}
             >
-              <div
-                style={{
-                  width: "34px",
-                  height: "34px",
-                  borderRadius: "999px",
-                  background: "linear-gradient(135deg,#2563eb,#0ea5e9)",
-                  color: "white",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  fontWeight: "700",
-                }}
-              >
-                ✓
-              </div>
-
-              <span>{item}</span>
+              ✓
             </div>
-          ))}
-        </div>
+
+            <span>{item}</span>
+          </div>
+        ))}
       </section>
 
-      <section
-        style={{
-          textAlign: "center",
-          marginTop: "40px",
-        }}
-      >
+      <div style={{ textAlign: "center", marginTop: "40px" }}>
         <button className="btn-primary">
           📄 PDF 報告（下一版）
         </button>
-      </section>
+      </div>
     </main>
   );
 }
