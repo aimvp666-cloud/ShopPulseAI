@@ -1,1 +1,12 @@
-import {NextResponse} from "next/server"; export async function POST(){return NextResponse.json({status:"ready",version:"commit-001"});}
+
+import { NextResponse } from "next/server";
+
+export async function POST(req: Request) {
+  const data = await req.json();
+
+  return NextResponse.json({
+    success: true,
+    message: "資料已收到",
+    data
+  });
+}
