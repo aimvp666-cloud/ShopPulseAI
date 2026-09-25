@@ -5,10 +5,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 type Lead = {
+  id: number;
   store: string;
   industry: string;
   score: number;
   date: string;
+  preview?: string | null;
 };
 
 export default function AdminPage() {
@@ -16,30 +18,23 @@ export default function AdminPage() {
   const [selected, setSelected] = useState<Lead | null>(null);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("shoppulse_form");
+    const data = JSON.parse(
+      localStorage.getItem("shoppulse_leads") || "[]"
+    );
 
-    if (raw) {
-      const form = JSON.parse(raw);
-
-      setLeads([
-        {
-          store: form.store || "未命名店家",
-          industry: form.industry || "未分類",
-          score: 86,
-          date: new Date().toLocaleString("zh-TW"),
-        },
-      ]);
-    } else {
-      setLeads([
-        {
-          store: "示範咖啡",
-          industry: "餐飲",
-          score: 91,
-          date: "2026/09/26 14:30",
-        },
-      ]);
-    }
+    setLeads(data);
   }, []);
+
+  function deleteLead(id: number) {
+    const next = leads.filter((item) => item.id !== id);
+
+    setLeads(next);
+
+    localStorage.setItem(
+      "shoppulse_leads",
+      JSON.stringify(next)
+    );
+  }
 
   return (
     <main
@@ -59,8 +54,9 @@ export default function AdminPage() {
       >
         <div>
           <h1 style={{ margin: 0 }}>📊 ShopPulse CRM</h1>
+
           <p style={{ color: "#64748b", marginTop: "8px" }}>
-            店家健檢後台 v1
+            永久保存健檢紀錄
           </p>
         </div>
 
@@ -69,7 +65,13 @@ export default function AdminPage() {
         </Link>
       </div>
 
-      <div className="glass" style={{ borderRadius: "28px", padding: "26px" }}>
+      <div
+        className="glass"
+        style={{
+          borderRadius: "28px",
+          padding: "26px",
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -79,6 +81,7 @@ export default function AdminPage() {
         >
           <div>
             <h2 style={{ margin: 0 }}>客戶列表</h2>
+
             <p style={{ color: "#64748b" }}>
               共 {leads.length} 位店家
             </p>
@@ -93,7 +96,7 @@ export default function AdminPage() {
               fontWeight: 700,
             }}
           >
-            CRM v1
+            Local DB
           </div>
         </div>
 
@@ -119,9 +122,9 @@ export default function AdminPage() {
             </thead>
 
             <tbody>
-              {leads.map((lead, index) => (
+              {leads.map((lead) => (
                 <tr
-                  key={index}
+                  key={lead.id}
                   style={{
                     borderBottom: "1px solid #f1f5f9",
                   }}
@@ -194,12 +197,47 @@ export default function AdminPage() {
 
             <p>📅 {selected.date}</p>
 
+            {selected.preview && (
+              <img
+                src={selected.preview}
+                alt="store"
+                style={{
+                  width: "100%",
+                  borderRadius: "16px",
+                  marginTop: "16px",
+                }}
+              />
+            )}
+
             <button
               className="btn-primary"
-              style={{ width: "100%", marginTop: "20px" }}
+              style={{
+                width: "100%",
+                marginTop: "20px",
+              }}
               onClick={() => setSelected(null)}
             >
               關閉
+            </button>
+
+            <button
+              style={{
+                width: "100%",
+                marginTop: "10px",
+                padding: "14px",
+                borderRadius: "12px",
+                border: "1px solid #ef4444",
+                background: "white",
+                color: "#ef4444",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                deleteLead(selected.id);
+                setSelected(null);
+              }}
+            >
+              刪除紀錄
             </button>
           </div>
         </div>
