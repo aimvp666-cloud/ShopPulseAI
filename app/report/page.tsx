@@ -4,6 +4,63 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+type SWOTCard = {
+  title: string;
+  items: string[];
+};
+
+const swotCards: SWOTCard[] = [
+  {
+    title: "💪 優勢",
+    items: ["店面辨識度佳", "已有穩定客群"],
+  },
+  {
+    title: "⚠️ 待改善",
+    items: ["社群更新不足", "Google 照片偏少"],
+  },
+  {
+    title: "🚀 機會",
+    items: ["短影音導流", "Google SEO"],
+  },
+  {
+    title: "🛡️ 風險",
+    items: ["競爭增加", "回訪率下降"],
+  },
+];
+
+const makeoverItems = [
+  {
+    title: "招牌升級",
+    desc: "改成白底藍字立體燈箱，提高夜間辨識度。",
+  },
+  {
+    title: "燈光改善",
+    desc: "入口增加暖白色燈帶，讓門面更有質感。",
+  },
+  {
+    title: "入口動線",
+    desc: "門口留出展示區，引導客人進店。",
+  },
+  {
+    title: "Google 商家照片",
+    desc: "新增白天、夜景、店內三組照片。",
+  },
+  {
+    title: "短影音素材",
+    desc: "拍攝門面開燈前後對比，適合 Reels。",
+  },
+];
+
+const weekPlan = [
+  "Day 1：更新 Google 商家照片",
+  "Day 2：回覆近期評論",
+  "Day 3：發布第一支短影音",
+  "Day 4：優化店門口招牌",
+  "Day 5：建立回訪優惠",
+  "Day 6：分析熱門商品",
+  "Day 7：追蹤一週數據",
+];
+
 export default function ReportPage() {
   const [store, setStore] = useState("你的店");
   const [industry, setIndustry] = useState("");
@@ -26,7 +83,6 @@ export default function ReportPage() {
 
     const timer = setInterval(() => {
       current++;
-
       setScore(current);
 
       if (current >= targetScore) {
@@ -66,7 +122,12 @@ export default function ReportPage() {
       >
         <div style={{ fontSize: "42px", marginBottom: "8px" }}>🚀</div>
 
-        <h1 style={{ fontSize: "40px", marginBottom: "10px" }}>
+        <h1
+          style={{
+            fontSize: "40px",
+            marginBottom: "10px",
+          }}
+        >
           {store} AI 顧問報告
         </h1>
 
@@ -189,21 +250,21 @@ export default function ReportPage() {
             gap: "20px",
           }}
         >
-          {[
-            ["💪 優勢", ["店面辨識度佳", "已有穩定客群"]],
-            ["⚠️ 待改善", ["社群更新不足", "Google 照片偏少"]],
-            ["🚀 機會", ["短影音導流", "Google SEO"]],
-            ["🛡️ 風險", ["競爭增加", "回訪率下降"]],
-          ].map(([title, items]) => (
+          {swotCards.map((card) => (
             <div
-              key={title}
+              key={card.title}
               className="card"
               style={{ padding: "20px" }}
             >
-              <h3>{title}</h3>
+              <h3>{card.title}</h3>
 
-              <ul style={{ paddingLeft: "20px", marginTop: "14px" }}>
-                {(items as string[]).map((item) => (
+              <ul
+                style={{
+                  paddingLeft: "20px",
+                  marginTop: "14px",
+                }}
+              >
+                {card.items.map((item) => (
                   <li key={item} style={{ marginBottom: "8px" }}>
                     {item}
                   </li>
@@ -224,15 +285,9 @@ export default function ReportPage() {
       >
         <h2 style={{ marginBottom: "24px" }}>✨ AI 店面改造建議</h2>
 
-        {[
-          ["招牌升級", "改成白底藍字立體燈箱，提高夜間辨識度。"],
-          ["燈光改善", "入口增加暖白色燈帶，讓門面更有質感。"],
-          ["入口動線", "門口留出展示區，引導客人進店。"],
-          ["Google 商家照片", "新增白天、夜景、店內三組照片。"],
-          ["短影音素材", "拍攝門面開燈前後對比，適合 Reels。"],
-        ].map(([title, desc]) => (
+        {makeoverItems.map((item) => (
           <div
-            key={title}
+            key={item.title}
             style={{
               background: "#f8fafc",
               borderRadius: "18px",
@@ -240,7 +295,7 @@ export default function ReportPage() {
               marginBottom: "16px",
             }}
           >
-            <strong>{title}</strong>
+            <strong>{item.title}</strong>
 
             <p
               style={{
@@ -249,7 +304,7 @@ export default function ReportPage() {
                 lineHeight: "1.7",
               }}
             >
-              {desc}
+              {item.desc}
             </p>
           </div>
         ))}
@@ -265,15 +320,7 @@ export default function ReportPage() {
       >
         <h2 style={{ marginBottom: "22px" }}>📅 七天改善計畫</h2>
 
-        {[
-          "Day 1：更新 Google 商家照片",
-          "Day 2：回覆近期評論",
-          "Day 3：發布第一支短影音",
-          "Day 4：優化店門口招牌",
-          "Day 5：建立回訪優惠",
-          "Day 6：分析熱門商品",
-          "Day 7：追蹤一週數據",
-        ].map((item) => (
+        {weekPlan.map((item) => (
           <div
             key={item}
             style={{
