@@ -1,261 +1,384 @@
 
-import Link from "next/link";
+"use client";
 
-const cards = [
-  { icon: "🧠", title: "AI 健檢", desc: "100 分健康度分析" },
-  { icon: "⭐", title: "Google 商家", desc: "評論與曝光分析" },
-  { icon: "📱", title: "社群分析", desc: "IG、FB、Threads 分析" },
-  { icon: "🏪", title: "店面改造", desc: "AI 視覺改善建議" },
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+type SWOTCard = {
+  title: string;
+  items: string[];
+};
+
+const swotCards: SWOTCard[] = [
+  {
+    title: "💪 優勢",
+    items: ["店面辨識度佳", "已有穩定客群"],
+  },
+  {
+    title: "⚠️ 待改善",
+    items: ["社群更新不足", "Google 照片偏少"],
+  },
+  {
+    title: "🚀 機會",
+    items: ["短影音導流", "Google SEO"],
+  },
+  {
+    title: "🛡️ 風險",
+    items: ["競爭增加", "回訪率下降"],
+  },
 ];
 
-export default function Home() {
+const makeoverItems = [
+  {
+    title: "招牌升級",
+    desc: "改成白底藍字立體燈箱，提高夜間辨識度。",
+  },
+  {
+    title: "燈光改善",
+    desc: "入口增加暖白色燈帶，讓門面更有質感。",
+  },
+  {
+    title: "入口動線",
+    desc: "門口留出展示區，引導客人進店。",
+  },
+  {
+    title: "Google 商家照片",
+    desc: "新增白天、夜景、店內三組照片。",
+  },
+  {
+    title: "短影音素材",
+    desc: "拍攝門面開燈前後對比，適合 Reels。",
+  },
+];
+
+const weekPlan = [
+  "Day 1：更新 Google 商家照片",
+  "Day 2：回覆近期評論",
+  "Day 3：發布第一支短影音",
+  "Day 4：優化店門口招牌",
+  "Day 5：建立回訪優惠",
+  "Day 6：分析熱門商品",
+  "Day 7：追蹤一週數據",
+];
+
+const TARGET_SCORE = 86;
+
+export default function ReportPage() {
+  const [store, setStore] = useState("你的店");
+  const [industry, setIndustry] = useState("");
+  const [preview, setPreview] = useState<string | null>(null);
+  const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem("shoppulse_form");
+
+    if (raw) {
+      const form = JSON.parse(raw);
+
+      setStore(form.store || "你的店");
+      setIndustry(form.industry || "");
+      setPreview(form.preview || null);
+
+      const lead = {
+        id: Date.now(),
+        store: form.store || "未命名店家",
+        industry: form.industry || "未分類",
+        score: TARGET_SCORE,
+        date: new Date().toLocaleString("zh-TW"),
+        preview: form.preview || null,
+      };
+
+      const oldData = JSON.parse(
+        localStorage.getItem("shoppulse_leads") || "[]"
+      );
+
+      oldData.unshift(lead);
+
+      localStorage.setItem(
+        "shoppulse_leads",
+        JSON.stringify(oldData)
+      );
+    }
+
+    let current = 0;
+
+    const timer = setInterval(() => {
+      current++;
+      setScore(current);
+
+      if (current >= TARGET_SCORE) {
+        clearInterval(timer);
+      }
+    }, 20);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const angle = score * 3.6;
+
+  function downloadPDF() {
+    window.print();
+  }
+
   return (
-    <main>
+    <main
+      style={{
+        maxWidth: "1100px",
+        margin: "0 auto",
+        padding: "30px 20px 80px",
+      }}
+    >
+      <Link href="/" style={{ color: "#2563eb" }}>
+        ← 返回首頁
+      </Link>
+
       <section
+        className="glass"
         style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "70px 24px 90px",
+          borderRadius: "36px",
+          padding: "40px",
+          marginTop: "20px",
+          textAlign: "center",
         }}
       >
-        <div
+        <div style={{ fontSize: "42px", marginBottom: "8px" }}>🚀</div>
+
+        <h1
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
-            gap: "50px",
-            alignItems: "center",
+            fontSize: "40px",
+            marginBottom: "10px",
           }}
         >
-          <div>
-            <div
-              className="glass"
-              style={{
-                display: "inline-block",
-                padding: "8px 18px",
-                borderRadius: "999px",
-                marginBottom: "24px",
-              }}
-            >
-              ShopPulse AI
-            </div>
+          {store} AI 顧問報告
+        </h1>
 
-            <h1
-              style={{
-                fontSize: "clamp(46px,8vw,74px)",
-                lineHeight: "1.05",
-                marginBottom: "24px",
-              }}
-            >
-              讓 AI
-              <br />
-              成為你的店長。
-            </h1>
-
-            <p
-              style={{
-                color: "#64748b",
-                fontSize: "20px",
-                lineHeight: "1.8",
-                marginBottom: "36px",
-              }}
-            >
-              三分鐘完成 AI 店家健檢，自動分析 Google 商家、社群與店面表現，
-              快速找到真正影響營收的關鍵。
-            </p>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "14px",
-                flexWrap: "wrap",
-              }}
-            >
-              <Link href="/check" className="btn-primary">
-                免費開始
-              </Link>
-
-              <Link href="/report" className="btn-secondary">
-                查看範例
-              </Link>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "28px",
-                marginTop: "42px",
-                flexWrap: "wrap",
-              }}
-            >
-              <div>
-                <div style={{ fontSize: "30px", fontWeight: 700 }}>100+</div>
-                <div style={{ color: "#64748b" }}>可分析店家</div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: "30px", fontWeight: 700 }}>3 分鐘</div>
-                <div style={{ color: "#64748b" }}>完成健檢</div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: "30px", fontWeight: 700 }}>30 秒</div>
-                <div style={{ color: "#64748b" }}>生成報告</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="float">
-            <div
-              className="glass"
-              style={{
-                borderRadius: "36px",
-                padding: "28px",
-              }}
-            >
-              <svg viewBox="0 0 420 420" width="100%">
-                <defs>
-                  <linearGradient id="g" x1="0" x2="1">
-                    <stop offset="0%" stopColor="#2563EB" />
-                    <stop offset="100%" stopColor="#0EA5E9" />
-                  </linearGradient>
-                </defs>
-
-                <circle cx="210" cy="210" r="145" fill="url(#g)" opacity=".12" />
-                <circle cx="210" cy="210" r="110" fill="url(#g)" opacity=".08" />
-
-                <rect x="90" y="90" width="240" height="220" rx="30" fill="white" />
-
-                <rect x="120" y="120" width="170" height="16" rx="8" fill="#DBEAFE" />
-                <rect x="120" y="155" width="140" height="10" rx="5" fill="#CBD5E1" />
-                <rect x="120" y="185" width="160" height="10" rx="5" fill="#CBD5E1" />
-                <rect x="120" y="220" width="170" height="54" rx="16" fill="url(#g)" />
-
-                <polyline
-                  points="140,246 170,232 195,242 226,208 266,218"
-                  fill="none"
-                  stroke="white"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                />
-
-                <circle cx="312" cy="104" r="24" fill="#0EA5E9" />
-
-                <text x="312" y="111" textAnchor="middle" fill="white" fontSize="18">
-                  AI
-                </text>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        style={{
-          textAlign: "center",
-          padding: "20px 24px 70px",
-        }}
-      >
-        <p style={{ color: "#64748b", marginBottom: "20px" }}>
-          支援店家數位經營分析
+        <p style={{ color: "#64748b" }}>
+          {industry || "店家"}｜ShopPulse AI 專業健檢
         </p>
 
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "34px",
-            flexWrap: "wrap",
-            fontSize: "28px",
+            width: "220px",
+            height: "220px",
+            margin: "35px auto",
+            borderRadius: "999px",
+            background: `conic-gradient(#2563eb 0deg ${angle}deg,#e5e7eb ${angle}deg 360deg)`,
+            padding: "14px",
+            transition: "background .15s linear",
           }}
         >
-          ⭐ Google 💬 LINE 📷 Instagram 📍 Maps
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              background: "white",
+              borderRadius: "999px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "54px",
+                fontWeight: 800,
+              }}
+            >
+              {score}
+            </div>
+
+            <div style={{ color: "#64748b" }}>健康度</div>
+          </div>
         </div>
+
+        <p
+          style={{
+            color: "#64748b",
+            maxWidth: "620px",
+            margin: "0 auto",
+            lineHeight: "1.8",
+          }}
+        >
+          AI 已完成店家健檢，以下為目前最值得優先改善的項目。
+        </p>
       </section>
 
       <section
         style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "40px 24px 100px",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))",
+          gap: "24px",
+          marginTop: "30px",
         }}
       >
-        <h2
-          style={{
-            textAlign: "center",
-            fontSize: "42px",
-            marginBottom: "50px",
-          }}
-        >
-          AI 能幫你完成什麼？
-        </h2>
+        <div className="card" style={{ padding: "22px" }}>
+          <h3>📸 店面照片</h3>
+
+          {preview ? (
+            <img
+              src={preview}
+              alt="store"
+              style={{
+                width: "100%",
+                borderRadius: "18px",
+                marginTop: "14px",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                height: "220px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                color: "#64748b",
+              }}
+            >
+              尚未上傳照片
+            </div>
+          )}
+        </div>
+
+        <div className="card" style={{ padding: "22px" }}>
+          <h3>⭐ Google 商家分析</h3>
+
+          <p style={{ color: "#64748b", lineHeight: "1.8" }}>
+            建議增加近期照片、回覆評論、提升在地搜尋曝光，可增加點擊率與到店率。
+          </p>
+
+          <div style={{ height: "22px" }} />
+
+          <h3>📱 社群分析</h3>
+
+          <p style={{ color: "#64748b", lineHeight: "1.8" }}>
+            建議每週至少發布 2 支短影音，並搭配限時動態，提高自然觸及。
+          </p>
+        </div>
+      </section>
+
+      <section style={{ marginTop: "34px" }}>
+        <h2 style={{ marginBottom: "20px" }}>SWOT 分析</h2>
 
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
-            gap: "24px",
+            gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+            gap: "20px",
           }}
         >
-          {cards.map((card) => (
+          {swotCards.map((card) => (
             <div
               key={card.title}
               className="card"
-              style={{ padding: "28px" }}
+              style={{ padding: "20px" }}
             >
-              <div style={{ fontSize: "42px", marginBottom: "18px" }}>
-                {card.icon}
-              </div>
+              <h3>{card.title}</h3>
 
-              <h3 style={{ fontSize: "24px", marginBottom: "10px" }}>
-                {card.title}
-              </h3>
-
-              <p style={{ color: "#64748b", lineHeight: "1.7" }}>
-                {card.desc}
-              </p>
+              <ul
+                style={{
+                  paddingLeft: "20px",
+                  marginTop: "14px",
+                }}
+              >
+                {card.items.map((item) => (
+                  <li key={item} style={{ marginBottom: "8px" }}>
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
       </section>
 
       <section
+        className="glass"
         style={{
-          padding: "90px 24px 120px",
+          borderRadius: "30px",
+          padding: "32px",
+          marginTop: "34px",
         }}
       >
-        <div
-          className="glass"
-          style={{
-            maxWidth: "900px",
-            margin: "0 auto",
-            borderRadius: "36px",
-            padding: "50px 30px",
-            textAlign: "center",
-          }}
-        >
-          <h2
+        <h2 style={{ marginBottom: "24px" }}>✨ AI 店面改造建議</h2>
+
+        {makeoverItems.map((item) => (
+          <div
+            key={item.title}
             style={{
-              fontSize: "clamp(34px,5vw,52px)",
-              marginBottom: "20px",
+              background: "#f8fafc",
+              borderRadius: "18px",
+              padding: "18px",
+              marginBottom: "16px",
             }}
           >
-            今天就開始你的第一份 AI 店家健檢
-          </h2>
+            <strong>{item.title}</strong>
 
-          <p
-            style={{
-              color: "#64748b",
-              marginBottom: "30px",
-            }}
-          >
-            不需要安裝 App，立即獲得專業改善建議。
-          </p>
-
-          <Link href="/check" className="btn-primary">
-            免費開始
-          </Link>
-        </div>
+            <p
+              style={{
+                color: "#64748b",
+                marginTop: "8px",
+                lineHeight: "1.7",
+              }}
+            >
+              {item.desc}
+            </p>
+          </div>
+        ))}
       </section>
+
+      <section
+        className="glass"
+        style={{
+          borderRadius: "30px",
+          padding: "32px",
+          marginTop: "34px",
+        }}
+      >
+        <h2 style={{ marginBottom: "22px" }}>📅 七天改善計畫</h2>
+
+        {weekPlan.map((item) => (
+          <div
+            key={item}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              marginBottom: "16px",
+            }}
+          >
+            <div
+              style={{
+                width: "34px",
+                height: "34px",
+                borderRadius: "50%",
+                background:
+                  "linear-gradient(135deg,#2563eb,#0ea5e9)",
+                color: "white",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontWeight: 700,
+              }}
+            >
+              ✓
+            </div>
+
+            <span>{item}</span>
+          </div>
+        ))}
+      </section>
+
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "36px",
+        }}
+      >
+        <button className="btn-primary" onClick={downloadPDF}>
+          📄 下載顧問報告（PDF）
+        </button>
+      </div>
     </main>
   );
 }
